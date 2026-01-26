@@ -1,0 +1,11 @@
+
+
+payment:
+  vnPay:
+    url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    version: 2.1.0
+    command: pay
+    tmnCode: ${TMN_CODE}
+    secretKey: ${SECRET_KEY}
+    orderType: other
+    returnUrl: http://localhost:8080/payment-form/vnPayReturn

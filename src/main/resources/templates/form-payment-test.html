@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row d-flex justify-content-center">
+        <div class="col-6">
+            <div class="mb-3">
+                <label for="inputAmount" class="form-label">Amout</label>
+                <input name="amount" type="number" class="form-control" id="inputAmount" placeholder="Input amount pay">
+            </div>
+            <div class="mb-3">
+                <label for="inputBankCode" class="form-label">Bank Code</label>
+                <input name="bankCode" type="text" class="form-control" id="inputBankCode" placeholder="Input bankCode ex: VNPAY">
+            </div>
+            <div id="qrPayment"></div>
+            <button class="btn btn-primary" id="btnGetLinkPay">Get Link</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("btnGetLinkPay").addEventListener("click", async () => {
+        let amountValue = document.getElementById("inputAmount").value;
+        let bankCode = document.getElementById("inputBankCode").value;
+        const result = await fetch(`/payment/vn-pay?amount=${parseInt(amountValue)}&bankCode=${bankCode}`, { method: "get" });
+        const data = await result.json();
+        window.location.href = data.data.paymentUrl;
+    })
+</script>
+</body>
+</html>
