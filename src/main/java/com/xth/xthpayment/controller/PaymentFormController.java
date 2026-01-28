@@ -20,4 +20,9 @@ public class PaymentFormController {
         model.addAttribute("message", vnp_TransactionStatus.equals("00") ? "Success" : "Fail");
         return "form-payment-return";
     }
+
+    @GetMapping("/payos")
+    public String payosForm(Model model) {
+        return "payos";
+    }
 }

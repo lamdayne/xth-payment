@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayOS Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3 class="card-title mb-4 text-center">Thanh toán PayOS</h3>
+                    <div class="mb-3">
+                        <label for="amountInput" class="form-label">Số tiền (VND)</label>
+                        <input name="amount" type="number" class="form-control" id="amountInput"
+                               placeholder="Nhập số tiền" min="1000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Nội dung</label>
+                        <textarea name="description" class="form-control" id="description"
+                                  rows="3" placeholder="Nhập nội dung thanh toán"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button id="btnCheckout" class="btn btn-primary btn-lg">
+                            <span id="btnText">Thanh toán</span>
+                            <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">
+                    <i class="bi bi-credit-card"></i> Thanh toán PayOS
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="min-height: 600px;">
+                <div id="loadingSpinner" class="text-center p-5">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 fw-bold">Đang tạo liên kết thanh toán...</p>
+                    <p class="text-muted">Vui lòng đợi trong giây lát</p>
+                </div>
+                <iframe id="paymentFrame" style="width: 100%; height: 600px; border: none; display: none;"
+                        sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SUCCESS: Load Bootstrap JS BEFORE your custom script -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+<!-- Your custom script AFTER Bootstrap -->
+<script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnCheckout = document.getElementById("btnCheckout");
+        const btnText = document.getElementById("btnText");
+        const btnSpinner = document.getElementById("btnSpinner");
+
+        btnCheckout.addEventListener("click", async () => {
+            const amount = document.getElementById("amountInput").value;
+            const description = document.getElementById("description").value;
+
+            // Validation
+            if (!amount || amount < 1000) {
+                alert("Vui lòng nhập số tiền hợp lệ (tối thiểu 1,000 VND)");
+                return;
+            }
+
+            // Disable button during processing
+            btnCheckout.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+
+            try {
+                // Get or create modal instance
+                const modalElement = document.getElementById('paymentModal');
+                let modal = bootstrap.Modal.getInstance(modalElement);
+                if (!modal) {
+                    modal = new bootstrap.Modal(modalElement);
+                }
+                modal.show();
+
+                // Show loading spinner
+                document.getElementById('loadingSpinner').style.display = 'block';
+                document.getElementById('paymentFrame').style.display = 'none';
+
+                // Call API to create payment link
+                const response = await fetch(`/payment/payos?amount=${amount}&description=${description}`, { method: 'POST' });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Không thể tạo liên kết thanh toán');
+                }
+
+                const data = await response.json();
+                console.log('Payment response:', data);
+
+                const paymentUrl = data.paymentUrl || data.data?.paymentUrl;
+
+                if (!paymentUrl) {
+                    throw new Error('Không nhận được URL thanh toán');
+                }
+
+                // Hide loading and show iframe
+                document.getElementById('loadingSpinner').style.display = 'none';
+                const iframe = document.getElementById('paymentFrame');
+                iframe.src = paymentUrl;
+                iframe.style.display = 'block';
+
+                // Listen for payment completion from PayOS
+                window.addEventListener('message', function paymentMessageHandler(event) {
+                    console.log('Received message:', event.data);
+
+                    // PayOS sends different types of messages
+                    if (event.data === 'payment-success' ||
+                        event.data?.type === 'PAYMENT_SUCCESS' ||
+                        event.data?.success === true) {
+
+                        modal.hide();
+                        alert('✅ Thanh toán thành công!');
+
+                        // Clean up
+                        window.removeEventListener('message', paymentMessageHandler);
+
+                        // Reset form
+                        document.getElementById('amountInput').value = '';
+                        document.getElementById('description').value = '';
+
+                        // Optionally reload or redirect
+                        // window.location.reload();
+                    }
+                }, false);
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('❌ Có lỗi xảy ra: ' + error.message);
+
+                // Close modal if it's open
+                const modalElement = document.getElementById('paymentModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            } finally {
+                // Re-enable button
+                btnCheckout.disabled = false;
+                btnText.classList.remove('d-none');
+                btnSpinner.classList.add('d-none');
+            }
+        });
+
+        // Handle modal close event
+        document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function () {
+            // Reset iframe
+            document.getElementById('paymentFrame').src = '';
+            document.getElementById('paymentFrame').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'block';
+        });
+    });
+</script>
+</body>
+</html>

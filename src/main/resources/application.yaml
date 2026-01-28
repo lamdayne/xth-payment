@@ -9,3 +9,10 @@ payment:
     secretKey: ${SECRET_KEY}
     orderType: other
     returnUrl: http://localhost:8080/payment-form/vnPayReturn
+
+  payOs:
+    client_id: ${PAYOS_CLIENT_ID}
+    api_key: ${PAYOS_API_KEY}
+    checksum_key: ${PAYOS_CHECKSUM_KEY}
+    cancel_url: http://localhost:8080/cancel
+    return_url: http://localhost:8080/home
