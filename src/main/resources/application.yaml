@@ -1,4 +1,10 @@
-
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jpa:
+    show-sql: true
 
 payment:
   vnPay:
@@ -16,3 +22,9 @@ payment:
     checksum_key: ${PAYOS_CHECKSUM_KEY}
     cancel_url: http://localhost:8080/cancel
     return_url: http://localhost:8080/home
+    bankId: 970422
+
+cloudinary:
+  cloud_name: ${CLOUD_NAME_CLOUDINARY}
+  api_key: ${API_KEY_CLOUDINARY}
+  api_secret: ${API_SECRET_CLOUDINARY}

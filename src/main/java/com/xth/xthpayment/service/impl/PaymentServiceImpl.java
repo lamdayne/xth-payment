@@ -2,6 +2,7 @@ package com.xth.xthpayment.service.impl;
 
 import com.xth.xthpayment.config.payment.PayOSConfig;
 import com.xth.xthpayment.config.payment.VNPayConfig;
+import com.xth.xthpayment.dto.request.PaymentRequestDTO;
 import com.xth.xthpayment.dto.response.PaymentResponse;
 import com.xth.xthpayment.service.PaymentService;
 import com.xth.xthpayment.util.VNPayUtil;
@@ -48,18 +49,32 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public String createPaymentLink(HttpServletRequest request) {
+    public PaymentResponse.PayOSResponse createPayOSPayment(PaymentRequestDTO request) {
         PayOS payOS = payOSConfig.payOS();
         CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()
                 .orderCode(System.currentTimeMillis() / 1000)
-                .amount(Long.parseLong(request.getParameter("amount")))
-                .description(request.getParameter("description"))
+                .amount(request.getAmount())
+                .description(request.getDescription())
                 .cancelUrl(payOSConfig.getCancelUrl())
                 .returnUrl(payOSConfig.getReturnUrl())
                 .build();
 
         var paymentLink = payOS.paymentRequests().create(paymentRequest);
         System.out.println("paymentLink: " + paymentLink.getCheckoutUrl());
-        return paymentLink.getCheckoutUrl();
+        // Format: https://img.vietqr.io/image/<BANK_ID>-<ACCOUNT_NO>-vietqr_pro.jpg?addInfo=<DESCRIPTION>&amount=<AMOUNT>
+        String qrImageUrl = String.format(
+                "https://img.vietqr.io/image/%s-%s-vietqr_pro.jpg?addInfo=%s&amount=%d",
+                payOSConfig.getBankId(),
+                paymentLink.getAccountNumber(),
+                paymentLink.getDescription(),
+                paymentLink.getAmount()
+        );
+
+        System.out.println(qrImageUrl);
+
+        return PaymentResponse.PayOSResponse.builder()
+                .paymentUrl(paymentLink.getCheckoutUrl())
+                .qrImageUrl(qrImageUrl)
+                .build();
     }
 }

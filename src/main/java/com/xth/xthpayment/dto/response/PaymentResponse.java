@@ -12,4 +12,11 @@ public class PaymentResponse {
         private String message;
         private String paymentUrl;
     }
+
+    @Builder
+    @Getter
+    public static class PayOSResponse {
+        private String paymentUrl;
+        private String qrImageUrl;
+    }
 }

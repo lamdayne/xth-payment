@@ -25,6 +25,10 @@ public class PayOSConfig {
     @Value("${payment.payOs.return_url}")
     private String returnUrl;
 
+    @Getter
+    @Value("${payment.payOs.bankId}")
+    private String bankId;
+
     @Bean
     public PayOS payOS() {
         return new PayOS(clientId, apiKey, checksumKey);

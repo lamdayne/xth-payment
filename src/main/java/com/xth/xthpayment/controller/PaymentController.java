@@ -1,17 +1,13 @@
 package com.xth.xthpayment.controller;
 
+import com.xth.xthpayment.dto.request.PaymentRequestDTO;
 import com.xth.xthpayment.dto.response.ApiResponse;
 import com.xth.xthpayment.dto.response.PaymentResponse;
 import com.xth.xthpayment.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 
 @RestController
 @RequestMapping("/payment")
@@ -29,7 +25,10 @@ public class PaymentController {
     }
 
     @PostMapping("/payos")
-    public ResponseEntity<?> payOS(HttpServletRequest request) {
-        return ResponseEntity.ok().body(Map.of("paymentUrl", paymentService.createPaymentLink(request)));
+    public ApiResponse<PaymentResponse.PayOSResponse> payOS(@RequestBody PaymentRequestDTO request) {
+        return ApiResponse.<PaymentResponse.PayOSResponse>builder()
+                .message("success")
+                .data(paymentService.createPayOSPayment(request))
+                .build();
     }
 }
