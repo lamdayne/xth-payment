@@ -15,4 +15,5 @@ public interface OrderService {
     OrderResponse getOrderById(String orderId);
     void updateStatusByOrderCode(String orderCode, String status);
     String getStatusByOrderCode(String orderCode);
+    OrderResponse getOrderByOrderCodeAndPhone(String orderCode, String phone);
 }

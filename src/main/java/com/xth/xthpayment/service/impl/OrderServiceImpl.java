@@ -69,4 +69,12 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND))
                 .getStatus();
     }
+
+    @Override
+    public OrderResponse getOrderByOrderCodeAndPhone(String orderCode, String phone) {
+        return orderMapper.toOrderResponse(
+                orderRepository.findByOrderCodeAndPhone(orderCode, phone)
+                        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND))
+        );
+    }
 }

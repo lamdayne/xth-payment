@@ -59,4 +59,14 @@ public class OrderController {
                 .data(orderService.getStatusByOrderCode(orderCode))
                 .build();
     }
+
+    @GetMapping("/track")
+    public ApiResponse<OrderResponse> getTrackOrder(@RequestParam String orderCode,
+                                                    @RequestParam String phone
+    ) {
+        return ApiResponse.<OrderResponse>builder()
+                .data(orderService.getOrderByOrderCodeAndPhone(orderCode, phone))
+                .build();
+    }
+
 }

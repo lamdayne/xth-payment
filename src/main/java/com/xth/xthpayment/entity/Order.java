@@ -26,4 +26,6 @@ public class Order {
     private String zipCode;
     private String status;
     private Date orderDate;
+    private String productId;
+    private Long totalPrice;
 }

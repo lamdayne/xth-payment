@@ -57,6 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .description(request.getDescription())
                 .cancelUrl(payOSConfig.getCancelUrl())
                 .returnUrl(payOSConfig.getReturnUrl())
+                .expiredAt((System.currentTimeMillis() / 1000) + 120)
                 .build();
 
         var paymentLink = payOS.paymentRequests().create(paymentRequest);

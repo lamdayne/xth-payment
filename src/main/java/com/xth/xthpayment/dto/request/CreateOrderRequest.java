@@ -17,4 +17,6 @@ public class CreateOrderRequest {
     private String state;
     private String zipCode;
     private String status;
+    private String productId;
+    private Long totalPrice;
 }
